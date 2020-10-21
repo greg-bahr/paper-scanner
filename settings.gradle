@@ -1,2 +1,3 @@
 include ':app'
 rootProject.name = "Paper Scanner"
+include ':opencv-4.5.0'
