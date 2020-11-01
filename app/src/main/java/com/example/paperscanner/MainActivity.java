@@ -16,23 +16,10 @@ import com.example.paperscanner.camera.ImagePreviewFragment;
 import com.example.paperscanner.camera.PaperScanningFragment;
 import com.example.paperscanner.scan_history.ScanHistoryFragment;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 
 public class MainActivity extends AppCompatActivity implements ScanHistoryFragment.OnCameraFabClickListener, PaperScanningFragment.OnImageCaptureListener, ActivityCompat.OnRequestPermissionsResultCallback {
     private final int PERMISSION_REQUEST_CODE = 1;
-
-    private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this) {
-        @Override
-        public void onManagerConnected(int status) {
-            super.onManagerConnected(status);
-
-            if (status == LoaderCallbackInterface.SUCCESS) {
-                Log.i("MainActivity", "OpenCV loaded successfully!");
-            }
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
