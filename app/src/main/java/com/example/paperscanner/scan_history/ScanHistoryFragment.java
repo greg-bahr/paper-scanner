@@ -34,7 +34,7 @@ public class ScanHistoryFragment extends Fragment {
         cameraFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                cameraFabClickListener.onCameraFabClick(v);
+                cameraFabClickListener.onCameraFabClick();
             }
         });
 
@@ -42,7 +42,7 @@ public class ScanHistoryFragment extends Fragment {
     }
 
     public interface OnCameraFabClickListener {
-        void onCameraFabClick(View v);
+        void onCameraFabClick();
     }
 
 }
