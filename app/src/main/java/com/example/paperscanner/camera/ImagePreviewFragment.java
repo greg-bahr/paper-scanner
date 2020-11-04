@@ -49,6 +49,7 @@ public class ImagePreviewFragment extends Fragment {
         Bundle bundle = this.getArguments();
         if (bundle != null) {
             byte[] imageBytes = bundle.getByteArray("image");
+            bundle.clear();
 
             image = Imgcodecs.imdecode(new MatOfByte(imageBytes), Imgcodecs.IMREAD_UNCHANGED);
             Core.flip(image.t(), image, 1);
