@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Paper Scanner</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_scan">ScanActivity</string>
+    <string name="back_button">Back button</string>
+    <string name="picture_preview">Picture preview</string>
+    <string name="submit_image_button">submit image button</string>
+    <string name="camera_button">Camera button</string>
 </resources>

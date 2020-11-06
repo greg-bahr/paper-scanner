@@ -3,10 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:background="#000000"
+    tools:context=".camera.ScanActivity">
 
     <FrameLayout
-        android:id="@+id/scanhistory_fragment_container"
+        android:id="@+id/scan_fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

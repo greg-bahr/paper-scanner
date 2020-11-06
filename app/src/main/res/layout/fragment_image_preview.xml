@@ -3,14 +3,36 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000000"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".camera.ImagePreviewFragment">
 
+    <ImageButton
+        android:id="@+id/close_image_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/back_button"
+        android:src="@drawable/arrow_back_white_24dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/captured_image_preview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-    />
+        android:contentDescription="@string/picture_preview" />
+
+    <ImageButton
+        android:id="@+id/submit_image_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/submit_image_button"
+        android:src="@drawable/arrow_forward_white_24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

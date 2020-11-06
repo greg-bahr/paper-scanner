@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import androidx.fragment.app.Fragment;
@@ -24,6 +25,7 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import org.opencv.photo.Photo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,9 +34,8 @@ public class ImagePreviewFragment extends Fragment {
 
     private static final String TAG = "ImagePreviewFragment";
     private static final int DOWNSAMPLE_COUNT = 3;
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
-    private ImageView imageView;
     private Bitmap previewImage;
 
     Mat image;
@@ -44,7 +45,11 @@ public class ImagePreviewFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_image_preview, container, false);
 
-        imageView = view.findViewById(R.id.captured_image_preview);
+        ImageView imageView = view.findViewById(R.id.captured_image_preview);
+        ImageButton submitImageButton = view.findViewById(R.id.submit_image_button);
+        ImageButton backButton = view.findViewById(R.id.close_image_button);
+
+        backButton.setOnClickListener(v -> this.getFragmentManager().popBackStackImmediate());
 
         Bundle bundle = this.getArguments();
         if (bundle != null) {
@@ -56,7 +61,8 @@ public class ImagePreviewFragment extends Fragment {
             Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2RGB);
 
             MatOfPoint2f paper = detectPaper(image);
-            warpImage(paper);
+            warpImage(image, paper);
+            sharpenImage(image);
 
             previewImage = Bitmap.createBitmap(image.cols(), image.rows(), Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(image, previewImage);
@@ -88,6 +94,8 @@ public class ImagePreviewFragment extends Fragment {
 
         Mat canny = new Mat();
         Imgproc.GaussianBlur(downsampled, downsampled, new Size(5, 5), 1);
+        Imgproc.adaptiveThreshold(downsampled, downsampled, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 11, 2);
+        Photo.fastNlMeansDenoising(downsampled, downsampled, 7, 21, 10);
 
         Imgproc.Canny(downsampled, canny, 50, 150, 5);
         downsampled.release();
@@ -171,24 +179,21 @@ public class ImagePreviewFragment extends Fragment {
         }
     }
 
-    private void warpImage(MatOfPoint2f paper) {
+    private void warpImage(Mat image, MatOfPoint2f paper) {
         if (paper == null) {
             return;
         }
 
         Point[] points = sortPoints(paper.toArray());
-        for (Point point : points) {
-            Log.i(TAG, point.x + " : " + point.y);
-        }
 
         double width = Math.max(distance(points[0], points[1]), distance(points[2], points[3]));
         double height = Math.max(distance(points[0], points[3]), distance(points[1], points[2]));
 
-        Point[] destinationPoints = new Point[] {
-            new Point(0, 0),
-            new Point(width, 0),
-            new Point(width, height),
-            new Point(0, height)
+        Point[] destinationPoints = new Point[]{
+                new Point(0, 0),
+                new Point(width, 0),
+                new Point(width, height),
+                new Point(0, height)
         };
 
         MatOfPoint2f corners = new MatOfPoint2f(points);
@@ -197,6 +202,14 @@ public class ImagePreviewFragment extends Fragment {
         Mat transform = Imgproc.getPerspectiveTransform(corners, destination);
         Imgproc.warpPerspective(image, image, transform, new Size(width, height));
         transform.release();
+    }
+
+    private void sharpenImage(Mat image) {
+        Imgproc.cvtColor(image, image, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.medianBlur(image, image, 5);
+        Imgproc.adaptiveThreshold(image, image, 255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C, Imgproc.THRESH_BINARY, 11, 2);
+        Imgproc.morphologyEx(image, image, Imgproc.MORPH_CLOSE, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3)));
+        Imgproc.erode(image, image, Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(2, 2)));
     }
 
     private double distance(Point p1, Point p2) {
