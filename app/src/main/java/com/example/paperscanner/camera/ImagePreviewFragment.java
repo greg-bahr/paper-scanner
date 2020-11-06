@@ -1,5 +1,6 @@
 package com.example.paperscanner.camera;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.example.paperscanner.R;
@@ -37,8 +39,20 @@ public class ImagePreviewFragment extends Fragment {
     private static final boolean DEBUG = false;
 
     private Bitmap previewImage;
+    private OnImageSubmitListener onImageSubmitListener;
 
     Mat image;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+        try {
+            onImageSubmitListener = (OnImageSubmitListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString() + " must implement OnImageSubmitListener");
+        }
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -50,6 +64,7 @@ public class ImagePreviewFragment extends Fragment {
         ImageButton backButton = view.findViewById(R.id.close_image_button);
 
         backButton.setOnClickListener(v -> this.getFragmentManager().popBackStackImmediate());
+
 
         Bundle bundle = this.getArguments();
         if (bundle != null) {
@@ -68,6 +83,7 @@ public class ImagePreviewFragment extends Fragment {
             Utils.matToBitmap(image, previewImage);
 
             imageView.setImageBitmap(previewImage);
+            submitImageButton.setOnClickListener(v -> onImageSubmitListener.onImageSubmit(previewImage));
 
         } else {
             Log.e(TAG, "No image to preview!");
@@ -258,11 +274,15 @@ public class ImagePreviewFragment extends Fragment {
             }
         }
 
-        return new Point[] {
-            points[minSumIndex],
-            points[maxDiffIndex],
-            points[maxSumIndex],
-            points[minDiffIndex]
+        return new Point[]{
+                points[minSumIndex],
+                points[maxDiffIndex],
+                points[maxSumIndex],
+                points[minDiffIndex]
         };
+    }
+
+    public interface OnImageSubmitListener {
+        void onImageSubmit(Bitmap image);
     }
 }

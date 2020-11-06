@@ -28,9 +28,9 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class PaperScanningFragment extends Fragment {
+public class ImageCaptureFragment extends Fragment {
 
-    private static final String TAG = "PaperScanningFragment";
+    private static final String TAG = "ImageCaptureFragment";
     private FloatingActionButton captureImageButton;
     private OnImageCaptureListener imageCaptureListener;
     private PreviewView viewfinder;
@@ -40,7 +40,7 @@ public class PaperScanningFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_paper_scanning, container, false);
+        return inflater.inflate(R.layout.fragment_image_capture, container, false);
     }
 
     @Override
@@ -48,12 +48,7 @@ public class PaperScanningFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         captureImageButton = view.findViewById(R.id.capture_image_button);
-        captureImageButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                captureImage();
-            }
-        });
+        captureImageButton.setOnClickListener(v -> captureImage());
 
         viewfinder = view.findViewById(R.id.viewfinder);
         viewfinder.setImplementationMode(PreviewView.ImplementationMode.PERFORMANCE);

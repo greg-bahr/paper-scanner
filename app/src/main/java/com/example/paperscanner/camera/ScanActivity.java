@@ -3,6 +3,7 @@ package com.example.paperscanner.camera;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -19,14 +20,16 @@ import com.example.paperscanner.R;
 
 import org.opencv.android.OpenCVLoader;
 
-public class ScanActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, PaperScanningFragment.OnImageCaptureListener {
+public class ScanActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, ImageCaptureFragment.OnImageCaptureListener, ImagePreviewFragment.OnImageSubmitListener {
     private final int PERMISSION_REQUEST_CODE = 1;
     private final String TAG = "ScanActivity";
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan);
+
 
         if (this.getSupportActionBar() != null) {
             this.getSupportActionBar().hide();
@@ -38,8 +41,8 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
         }
 
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        PaperScanningFragment paperScanningFragment = new PaperScanningFragment();
-        ft.add(R.id.scan_fragment_container, paperScanningFragment);
+        ImageCaptureFragment imageCaptureFragment = new ImageCaptureFragment();
+        ft.add(R.id.scan_fragment_container, imageCaptureFragment);
         ft.commit();
     }
 
@@ -52,9 +55,9 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
         }
     }
 
-
     @Override
     public void OnImageCapture(byte[] imageBytes) {
+        // TODO: Should process the image here, ImagePreviewFragment should only be previewing images
         Bundle bundle = new Bundle();
         bundle.putByteArray("image", imageBytes);
 
@@ -65,6 +68,11 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
         ft.replace(R.id.scan_fragment_container, fragment);
         ft.addToBackStack(null);
         ft.commit();
+    }
+
+    @Override
+    public void onImageSubmit(Bitmap image) {
+        // TODO: save image to private file, add location to bundle, switch to fragment listing current images
     }
 
     @Override
