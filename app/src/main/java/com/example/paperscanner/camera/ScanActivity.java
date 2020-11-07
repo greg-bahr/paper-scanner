@@ -19,6 +19,12 @@ import com.example.paperscanner.MainActivity;
 import com.example.paperscanner.R;
 
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
 public class ScanActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, ImageCaptureFragment.OnImageCaptureListener, ImagePreviewFragment.OnImageSubmitListener {
     private final int PERMISSION_REQUEST_CODE = 1;
@@ -57,9 +63,16 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
 
     @Override
     public void OnImageCapture(byte[] imageBytes) {
-        // TODO: Should process the image here, ImagePreviewFragment should only be previewing images
+        Mat image = Imgcodecs.imdecode(new MatOfByte(imageBytes), Imgcodecs.IMREAD_UNCHANGED);
+        Core.flip(image.t(), image, 1);
+        Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2RGB);
+
+        MatOfPoint2f paper = ImageProcessor.detectPaper(image);
+        ImageProcessor.warpImage(image, paper);
+        ImageProcessor.sharpenImage(image);
+
         Bundle bundle = new Bundle();
-        bundle.putByteArray("image", imageBytes);
+        bundle.putParcelable("image", ImageProcessor.matToBitmap(image));
 
         ImagePreviewFragment fragment = new ImagePreviewFragment();
         fragment.setArguments(bundle);
