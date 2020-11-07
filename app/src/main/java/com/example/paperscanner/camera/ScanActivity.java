@@ -26,16 +26,25 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+
 public class ScanActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, ImageCaptureFragment.OnImageCaptureListener, ImagePreviewFragment.OnImageSubmitListener {
     private final int PERMISSION_REQUEST_CODE = 1;
     private final String TAG = "ScanActivity";
 
+    Bundle images;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scan);
 
+        this.deleteTempImages();
+
+        this.images = new Bundle();
+        this.images.putStringArrayList("images", new ArrayList<>());
 
         if (this.getSupportActionBar() != null) {
             this.getSupportActionBar().hide();
@@ -58,6 +67,27 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
 
         if (!OpenCVLoader.initDebug()) {
             Log.e(TAG, "Failed to load OpenCV!");
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        this.deleteTempImages();
+    }
+
+    private void deleteTempImages() {
+        String[] files = this.fileList();
+        for (String path : files) {
+            if (path.contains(".png")) {
+                try {
+                    File file = new File(this.getFilesDir(), path);
+                    file.delete();
+                } catch (Exception e) {
+                    Log.e(TAG, "Exception: ", e);
+                }
+            }
         }
     }
 
@@ -85,7 +115,22 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
 
     @Override
     public void onImageSubmit(Bitmap image) {
-        // TODO: save image to private file, add location to bundle, switch to fragment listing current images
+        int currentImage = this.images.getStringArrayList("images").size();
+        File file = new File(this.getFilesDir(), currentImage + ".png");
+
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            image.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            this.images.getStringArrayList("images").add(currentImage + ".png");
+
+            ScanListFragment fragment = new ScanListFragment();
+            fragment.setArguments(this.images);
+
+            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.replace(R.id.scan_fragment_container, fragment);
+            ft.commit();
+        } catch (Exception e) {
+            Log.e(TAG, "Exception: ", e);
+        }
     }
 
     @Override

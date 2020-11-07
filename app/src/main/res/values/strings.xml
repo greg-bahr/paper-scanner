@@ -5,4 +5,7 @@
     <string name="picture_preview">Picture preview</string>
     <string name="submit_image_button">submit image button</string>
     <string name="camera_button">Camera button</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="cancel_scan">Cancel scan</string>
 </resources>
