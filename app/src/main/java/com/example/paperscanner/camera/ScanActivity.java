@@ -28,9 +28,10 @@ import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-public class ScanActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, ImageCaptureFragment.OnImageCaptureListener, ImagePreviewFragment.OnImageSubmitListener {
+public class ScanActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, ImageCaptureFragment.OnImageCaptureListener, ImagePreviewFragment.OnImageSubmitListener, ScanListFragment.ScanListFragmentListener {
     private final int PERMISSION_REQUEST_CODE = 1;
     private final String TAG = "ScanActivity";
 
@@ -43,7 +44,10 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
 
         this.deleteTempImages();
 
+        LocalDateTime localDateTime = LocalDateTime.now();
+
         this.images = new Bundle();
+        this.images.putString("title", "PaperScanner_" + localDateTime.toString());
         this.images.putStringArrayList("images", new ArrayList<>());
 
         if (this.getSupportActionBar() != null) {
@@ -131,6 +135,17 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
         } catch (Exception e) {
             Log.e(TAG, "Exception: ", e);
         }
+    }
+
+    @Override
+    public void onCancelScan() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
+    @Override
+    public void onTitleChange(String name) {
+        this.images.putString("title", name);
     }
 
     @Override
