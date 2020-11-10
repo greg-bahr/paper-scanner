@@ -65,7 +65,8 @@ public class ScanListFragment extends Fragment implements RenamePdfDialogFragmen
 
         RecyclerView recyclerView = view.findViewById(R.id.scanned_image_recycler_view);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false);
-        ScanListRecyclerViewAdapter adapter = new ScanListRecyclerViewAdapter(getArguments().getStringArrayList("images"));
+        ScanListRecyclerViewAdapter adapter = new ScanListRecyclerViewAdapter(getArguments().getStringArrayList("images"), getArguments().getParcelable("lastImage"));
+        getArguments().remove("lastImage");
 
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(layoutManager);

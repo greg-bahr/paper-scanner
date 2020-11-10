@@ -85,6 +85,7 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
     protected void onDestroy() {
         super.onDestroy();
 
+        this.images.clear();
         this.deleteTempImages();
     }
 
@@ -137,7 +138,6 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
             if (file.delete()) {
                 paths.remove(paths.size() - 1);
             }
-            ;
         }
     }
 
@@ -146,19 +146,23 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
         int currentImage = this.images.getStringArrayList("images").size();
         File file = new File(this.getFilesDir(), currentImage + ".png");
 
-        try (FileOutputStream fos = new FileOutputStream(file)) {
-            image.compress(Bitmap.CompressFormat.PNG, 100, fos);
-            this.images.getStringArrayList("images").add(file.getAbsolutePath());
+        this.images.putParcelable("lastImage", image);
+        this.images.getStringArrayList("images").add(file.getAbsolutePath());
 
-            ScanListFragment fragment = new ScanListFragment();
-            fragment.setArguments(this.images);
+        new Thread(() -> {
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                image.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            } catch (Exception e) {
+                Log.e(TAG, "Exception: ", e);
+            }
+        }).start();
 
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.replace(R.id.scan_fragment_container, fragment);
-            ft.commit();
-        } catch (Exception e) {
-            Log.e(TAG, "Exception: ", e);
-        }
+        ScanListFragment fragment = new ScanListFragment();
+        fragment.setArguments(this.images);
+
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.scan_fragment_container, fragment);
+        ft.commit();
     }
 
     @Override
@@ -187,6 +191,7 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
             name += ".pdf";
         }
         File folder = new File(this.getFilesDir().getAbsolutePath() + File.separator + "scans");
+        if (!folder.exists()) folder.mkdir();
         File file = new File(folder, name);
 
         List<String> paths = this.images.getStringArrayList("images");

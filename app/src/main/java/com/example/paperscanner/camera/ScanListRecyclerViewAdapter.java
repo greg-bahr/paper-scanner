@@ -16,9 +16,11 @@ import java.util.List;
 
 public class ScanListRecyclerViewAdapter extends RecyclerView.Adapter<ScanListRecyclerViewAdapter.ViewHolder> {
     private final List<String> imagePaths;
+    private final Bitmap lastImage;
 
-    public ScanListRecyclerViewAdapter(List<String> imagePaths) {
+    public ScanListRecyclerViewAdapter(List<String> imagePaths, Bitmap lastImage) {
         this.imagePaths = imagePaths;
+        this.lastImage = lastImage;
     }
 
     @NonNull
@@ -31,7 +33,7 @@ public class ScanListRecyclerViewAdapter extends RecyclerView.Adapter<ScanListRe
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Bitmap bmp = BitmapFactory.decodeFile(imagePaths.get(position));
+        Bitmap bmp = position == this.getItemCount() - 1 && lastImage != null ? lastImage : BitmapFactory.decodeFile(imagePaths.get(position));
 
         holder.imageView.setImageBitmap(bmp);
     }
