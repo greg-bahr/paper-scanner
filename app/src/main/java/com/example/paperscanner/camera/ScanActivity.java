@@ -4,6 +4,9 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.pdf.PdfDocument;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -13,6 +16,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.paperscanner.MainActivity;
@@ -30,9 +34,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ScanActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, ImageCaptureFragment.OnImageCaptureListener, ImagePreviewFragment.OnImageSubmitListener, ScanListFragment.ScanListFragmentListener {
     private final int PERMISSION_REQUEST_CODE = 1;
+    private final int CREATE_PDF_REQUEST_CODE = 2;
+
     private final String TAG = "ScanActivity";
 
     Bundle images;
@@ -118,13 +125,30 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.scan_fragment_container);
+        if (fragment instanceof ScanListFragment) {
+            List<String> paths = this.images.getStringArrayList("images");
+            String path = paths.get(paths.size() - 1);
+
+            File file = new File(path);
+            if (file.delete()) {
+                paths.remove(paths.size() - 1);
+            }
+            ;
+        }
+    }
+
+    @Override
     public void onImageSubmit(Bitmap image) {
         int currentImage = this.images.getStringArrayList("images").size();
         File file = new File(this.getFilesDir(), currentImage + ".png");
 
         try (FileOutputStream fos = new FileOutputStream(file)) {
             image.compress(Bitmap.CompressFormat.PNG, 100, fos);
-            this.images.getStringArrayList("images").add(currentImage + ".png");
+            this.images.getStringArrayList("images").add(file.getAbsolutePath());
 
             ScanListFragment fragment = new ScanListFragment();
             fragment.setArguments(this.images);
@@ -147,6 +171,93 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
     public void onTitleChange(String name) {
         this.images.putString("title", name);
     }
+
+    @Override
+    public void onAddPage() {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ImageCaptureFragment imageCaptureFragment = new ImageCaptureFragment();
+        ft.add(R.id.scan_fragment_container, imageCaptureFragment);
+        ft.commit();
+    }
+
+    @Override
+    public void onSubmitPdf() {
+        String name = this.images.getString("title");
+        if (!name.contains(".pdf")) {
+            name += ".pdf";
+        }
+        File folder = new File(this.getFilesDir().getAbsolutePath() + File.separator + "scans");
+        File file = new File(folder, name);
+
+        List<String> paths = this.images.getStringArrayList("images");
+        PdfDocument document = new PdfDocument();
+
+        for (int i = 0; i < paths.size(); i++) {
+            Bitmap bmp = BitmapFactory.decodeFile(paths.get(i));
+            PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(bmp.getWidth(), bmp.getHeight(), i + 1).create();
+            PdfDocument.Page page = document.startPage(pageInfo);
+            Canvas canvas = page.getCanvas();
+
+            canvas.drawBitmap(bmp, 0, 0, null);
+            document.finishPage(page);
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            document.writeTo(fos);
+            document.close();
+        } catch (Exception e) {
+            Log.e(TAG, "Exception: ", e);
+        }
+
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+
+        // Letting the user choose a file to save into:
+//        Intent createDocument = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+//        createDocument.addCategory(Intent.CATEGORY_OPENABLE);
+//        createDocument.setType("application/pdf");
+//        createDocument.putExtra(Intent.EXTRA_TITLE, name);
+//
+//        startActivityForResult(createDocument, CREATE_PDF_REQUEST_CODE);
+    }
+
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//
+//        if (resultCode != RESULT_OK) {
+//            return;
+//        }
+//
+//        if (requestCode == CREATE_PDF_REQUEST_CODE && data != null && data.getData() != null) {
+//            savePdf(data.getData());
+//        }
+//    }
+
+//    private void savePdf(Uri uri) {
+//        List<String> paths = this.images.getStringArrayList("images");
+//        PdfDocument document = new PdfDocument();
+//
+//        for (int i = 0; i < paths.size(); i++) {
+//            Bitmap bmp = BitmapFactory.decodeFile(paths.get(i));
+//            PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(bmp.getWidth(), bmp.getHeight(), i+1).create();
+//            PdfDocument.Page page = document.startPage(pageInfo);
+//            Canvas canvas = page.getCanvas();
+//
+//            canvas.drawBitmap(bmp, 0, 0, null);
+//            document.finishPage(page);
+//        }
+//
+//        try (OutputStream os = this.getContentResolver().openOutputStream(uri)) {
+//            document.writeTo(os);
+//            document.close();
+//        } catch (Exception e) {
+//            Log.e(TAG, "Exception: ", e);
+//        }
+//
+//        Intent intent = new Intent(this, MainActivity.class);
+//        startActivity(intent);
+//    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
