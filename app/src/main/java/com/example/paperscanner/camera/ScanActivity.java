@@ -1,13 +1,18 @@
 package com.example.paperscanner.camera;
 
 import android.Manifest;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.pdf.PdfDocument;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -32,6 +37,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -190,9 +196,6 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
         if (!name.contains(".pdf")) {
             name += ".pdf";
         }
-        File folder = new File(this.getFilesDir().getAbsolutePath() + File.separator + "scans");
-        if (!folder.exists()) folder.mkdir();
-        File file = new File(folder, name);
 
         List<String> paths = this.images.getStringArrayList("images");
         PdfDocument document = new PdfDocument();
@@ -207,8 +210,16 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
             document.finishPage(page);
         }
 
-        try (FileOutputStream fos = new FileOutputStream(file)) {
-            document.writeTo(fos);
+        ContentResolver resolver = this.getContentResolver();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
+        contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS + File.separator + "PaperScanner");
+
+        Uri uri = resolver.insert(MediaStore.Files.getContentUri("external"), contentValues);
+
+        try (OutputStream os = this.getContentResolver().openOutputStream(uri)) {
+            document.writeTo(os);
             document.close();
         } catch (Exception e) {
             Log.e(TAG, "Exception: ", e);
@@ -216,53 +227,7 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
 
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
-
-        // Letting the user choose a file to save into:
-//        Intent createDocument = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-//        createDocument.addCategory(Intent.CATEGORY_OPENABLE);
-//        createDocument.setType("application/pdf");
-//        createDocument.putExtra(Intent.EXTRA_TITLE, name);
-//
-//        startActivityForResult(createDocument, CREATE_PDF_REQUEST_CODE);
     }
-
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//
-//        if (resultCode != RESULT_OK) {
-//            return;
-//        }
-//
-//        if (requestCode == CREATE_PDF_REQUEST_CODE && data != null && data.getData() != null) {
-//            savePdf(data.getData());
-//        }
-//    }
-
-//    private void savePdf(Uri uri) {
-//        List<String> paths = this.images.getStringArrayList("images");
-//        PdfDocument document = new PdfDocument();
-//
-//        for (int i = 0; i < paths.size(); i++) {
-//            Bitmap bmp = BitmapFactory.decodeFile(paths.get(i));
-//            PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(bmp.getWidth(), bmp.getHeight(), i+1).create();
-//            PdfDocument.Page page = document.startPage(pageInfo);
-//            Canvas canvas = page.getCanvas();
-//
-//            canvas.drawBitmap(bmp, 0, 0, null);
-//            document.finishPage(page);
-//        }
-//
-//        try (OutputStream os = this.getContentResolver().openOutputStream(uri)) {
-//            document.writeTo(os);
-//            document.close();
-//        } catch (Exception e) {
-//            Log.e(TAG, "Exception: ", e);
-//        }
-//
-//        Intent intent = new Intent(this, MainActivity.class);
-//        startActivity(intent);
-//    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
