@@ -44,7 +44,6 @@ import java.util.List;
 
 public class ScanActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback, ImageCaptureFragment.OnImageCaptureListener, ImagePreviewFragment.OnImageSubmitListener, ScanListFragment.ScanListFragmentListener {
     private final int PERMISSION_REQUEST_CODE = 1;
-    private final int CREATE_PDF_REQUEST_CODE = 2;
 
     private final String TAG = "ScanActivity";
 

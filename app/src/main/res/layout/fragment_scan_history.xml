@@ -6,6 +6,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".scan_history.ScanHistoryFragment">
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/scan_history_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/camera_fab"
         android:layout_width="wrap_content"
@@ -14,6 +21,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_margin="16dp"
         android:backgroundTint="@color/colorPrimaryDark"
-        android:src="@drawable/ic_baseline_camera_alt_24"/>
+        android:contentDescription="@string/start_scan"
+        android:src="@drawable/ic_baseline_camera_alt_24" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -11,4 +11,5 @@
     <string name="file_name">File Name</string>
     <string name="add_another_image">Add another image</string>
     <string name="submit_pdf">Submit PDF</string>
+    <string name="start_scan">Start scan</string>
 </resources>
