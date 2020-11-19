@@ -1,9 +1,12 @@
 package com.example.paperscanner.scan_history;
 
+import android.content.ContentUris;
 import android.graphics.pdf.PdfRenderer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.ParcelFileDescriptor;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,6 +15,7 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ShareCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -47,8 +51,27 @@ public class ScanPreviewFragment extends Fragment {
         TextView titleTextView = view.findViewById(R.id.scan_preview_title_textview);
         titleTextView.setText(filename);
 
-        ImageButton shareButton = view.findViewById(R.id.scan_preview_share_button);
+        ImageButton deleteButton = view.findViewById(R.id.scan_preview_delete_button);
+        deleteButton.setOnClickListener(v -> {
+            Uri contentUri = MediaStore.Files.getContentUri("external");
+            String selection = MediaStore.MediaColumns.RELATIVE_PATH + "=? AND " + MediaStore.MediaColumns.MIME_TYPE + "=? AND " + MediaStore.MediaColumns._ID + "=?";
+            String[] selectionArgs = new String[]{Environment.DIRECTORY_DOCUMENTS + "/PaperScanner/", "application/pdf", Long.toString(ContentUris.parseId(this.uri))};
 
+            this.getContext().getContentResolver().delete(contentUri, selection, selectionArgs);
+
+            this.getFragmentManager().popBackStackImmediate();
+        });
+
+        ImageButton shareButton = view.findViewById(R.id.scan_preview_share_button);
+        shareButton.setOnClickListener(v -> {
+            if (this.getActivity() != null) {
+                ShareCompat.IntentBuilder.from(this.getActivity())
+                        .setStream(this.uri)
+                        .setText(filename)
+                        .setType("application/pdf")
+                        .startChooser();
+            }
+        });
 
         return view;
     }
