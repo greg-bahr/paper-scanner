@@ -19,7 +19,7 @@ public class ScanListFragment extends Fragment implements RenamePdfDialogFragmen
 
     private static final String TAG = "ScanListFragment";
 
-    TextView fileNameText;
+    private TextView fileNameText;
     private ScanListFragmentListener scanListFragmentListener;
 
     @Override

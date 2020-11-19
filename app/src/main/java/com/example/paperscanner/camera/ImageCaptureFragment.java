@@ -103,7 +103,7 @@ public class ImageCaptureFragment extends Fragment {
                     byte[] buffer = new byte[bytes.remaining()];
                     bytes.get(buffer);
 
-                    imageCaptureListener.OnImageCapture(buffer);
+                    imageCaptureListener.onImageCapture(buffer);
                 }
 
                 super.onCaptureSuccess(image);
@@ -125,6 +125,6 @@ public class ImageCaptureFragment extends Fragment {
     }
 
     public interface OnImageCaptureListener {
-        void OnImageCapture(byte[] imageBytes);
+        void onImageCapture(byte[] imageBytes);
     }
 }

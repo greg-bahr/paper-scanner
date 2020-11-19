@@ -27,7 +27,8 @@ import java.util.Locale;
 
 public class ScanHistoryRecyclerViewAdapter extends RecyclerView.Adapter<ScanHistoryRecyclerViewAdapter.ViewHolder> {
 
-    Cursor pdfs;
+    private final Cursor pdfs;
+    private OnPdfClickListener onPdfClickListener;
 
     public ScanHistoryRecyclerViewAdapter(Cursor pdfs) {
         this.pdfs = pdfs;
@@ -54,6 +55,12 @@ public class ScanHistoryRecyclerViewAdapter extends RecyclerView.Adapter<ScanHis
 
         long id = this.pdfs.getLong(this.pdfs.getColumnIndex(MediaStore.MediaColumns._ID));
         Uri uri = ContentUris.withAppendedId(MediaStore.Files.getContentUri("external"), id);
+
+        holder.itemView.setOnClickListener(v -> {
+            if (this.onPdfClickListener != null) {
+                this.onPdfClickListener.onPdfClick(fileName, uri);
+            }
+        });
 
         holder.title.setText(fileName);
         holder.date.setText(date);
@@ -82,6 +89,11 @@ public class ScanHistoryRecyclerViewAdapter extends RecyclerView.Adapter<ScanHis
         return this.pdfs.getCount();
     }
 
+    public void setOnPdfClickListener(OnPdfClickListener onPdfClickListener) {
+        this.onPdfClickListener = onPdfClickListener;
+        this.notifyDataSetChanged();
+    }
+
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public Context context;
         public TextView title, date;
@@ -95,5 +107,9 @@ public class ScanHistoryRecyclerViewAdapter extends RecyclerView.Adapter<ScanHis
             this.preview = itemView.findViewById(R.id.scan_history_item_preview);
             this.context = context;
         }
+    }
+
+    public interface OnPdfClickListener {
+        void onPdfClick(String filename, Uri uri);
     }
 }

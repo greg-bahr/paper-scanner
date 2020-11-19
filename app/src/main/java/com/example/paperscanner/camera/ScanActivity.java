@@ -109,7 +109,7 @@ public class ScanActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     @Override
-    public void OnImageCapture(byte[] imageBytes) {
+    public void onImageCapture(byte[] imageBytes) {
         Mat image = Imgcodecs.imdecode(new MatOfByte(imageBytes), Imgcodecs.IMREAD_UNCHANGED);
         Core.flip(image.t(), image, 1);
         Imgproc.cvtColor(image, image, Imgproc.COLOR_BGR2RGB);

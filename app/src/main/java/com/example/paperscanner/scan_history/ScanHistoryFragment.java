@@ -20,18 +20,17 @@ import com.example.paperscanner.R;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class ScanHistoryFragment extends Fragment {
-    OnCameraFabClickListener cameraFabClickListener;
-
-    RecyclerView recyclerView;
-    Cursor pdfs;
+    private ScanHistoryFragmentListener scanHistoryFragmentListener;
+    private RecyclerView recyclerView;
+    private Cursor pdfs;
 
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         try {
-            cameraFabClickListener = (OnCameraFabClickListener) context;
+            scanHistoryFragmentListener = (ScanHistoryFragmentListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must implement OnCameraFabClickListener");
+            throw new ClassCastException(context.toString() + " must implement ScanHistoryFragmentListener");
         }
     }
 
@@ -41,7 +40,7 @@ public class ScanHistoryFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_scan_history, container, false);
 
         FloatingActionButton cameraFab = view.findViewById(R.id.camera_fab);
-        cameraFab.setOnClickListener(v -> cameraFabClickListener.onCameraFabClick());
+        cameraFab.setOnClickListener(v -> scanHistoryFragmentListener.onCameraFabClick());
 
         recyclerView = view.findViewById(R.id.scan_history_recycler_view);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
@@ -57,6 +56,7 @@ public class ScanHistoryFragment extends Fragment {
     public void onPause() {
         super.onPause();
 
+        this.recyclerView.setAdapter(null);
         this.pdfs.close();
     }
 
@@ -70,11 +70,14 @@ public class ScanHistoryFragment extends Fragment {
         this.pdfs = this.getContext().getContentResolver().query(contentUri, null, selection, selectionArgs, MediaStore.MediaColumns.DATE_MODIFIED + " DESC");
 
         ScanHistoryRecyclerViewAdapter adapter = new ScanHistoryRecyclerViewAdapter(this.pdfs);
+        adapter.setOnPdfClickListener((filename, uri) -> this.scanHistoryFragmentListener.onPdfClick(filename, uri));
         recyclerView.setAdapter(adapter);
     }
 
-    public interface OnCameraFabClickListener {
+    public interface ScanHistoryFragmentListener {
         void onCameraFabClick();
+
+        void onPdfClick(String filename, Uri uri);
     }
 
 }
